@@ -8,7 +8,12 @@ class Tag extends Model
 {
     protected $fillable = ['name', 'slug'];
 
-    public function post(){
+    public function posts(){
         return $this->belongsToMany('App\Post');
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 }

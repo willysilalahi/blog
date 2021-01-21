@@ -6,7 +6,7 @@
 @section('content')
     <div class="row">
         <div class="col-md-8">
-            <a href="{{ route('tag.create') }}" class="btn btn-info mb-3">Tambah Tag</a>
+            <a href="javaScript:void(0)" class="btn btn-info mb-3" onclick="openModalAdd()">Tambah Tag</a>
             @if ($message = Session::get('message'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ $message }}
@@ -29,13 +29,10 @@
                             <td>{{ $r + $tag->firstitem() }}</td>
                             <td>{{ $c->name }}</td>
                             <td>
-                                <form action="{{ route('tag.destroy', $c->id) }}" method="POST" class="form-inline">
-                                    @csrf
-                                    @method('delete')
-                                    <a href="{{ route('tag.edit', $c->id) }}" class="btn btn-primary btn-sm mr-1">Edit</a>
-                                    <button type="submit" onclick="confirm('Apakah anda yakin?')"
-                                        class="btn btn-danger btn-sm">Delete</button>
-                                </form>
+                                <a href="javaScript:void(0)" data-id="{{ $c->id }}"
+                                    class="btn btn-primary btn-sm mr-1 btnEditTag">Edit</a>
+                                <a href="javaScript:void(0)" onclick="confirm('Apakah anda yakin?')"
+                                    class="btn btn-danger  btn-sm btnDeleteTag" data-id="{{ $c->id }}">Delete</a>
                             </td>
                         </tr>
                     @endforeach
@@ -47,3 +44,47 @@
     </div>
 
 @endsection
+
+{{-- Modal --}}
+<div class="modal fade" id="addTagModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Tambah Tag</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="">Nama Tag</label>
+                    <input type="text" id="name" name="name" class="form-control">
+                    <span class="form-text text-danger" id="nameError"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="storeData()" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal --}}
+<div class="modal fade" id="editTagModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Edit Tag</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="updateData()" class="btn btn-primary">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -2,107 +2,146 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PostRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Repository\PostRepository;
 use App\Post;
+use App\Calendar;
 use App\Category;
+use App\Tag;
 use Faker\Provider\Lorem;
+use Auth;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    protected $user;
+
+
+    function __construct()
+    {
+        $this->user = new PostRepository;
+    }
+    
+
     public function index()
     {
-        $post = Post::paginate(5);
-        return view('admin.post.index', compact('post'));
+        $data['post'] = $this->user->getPost(10);
+        return view('admin.post.index', $data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+     
     public function create()
-    {
-        $category = Category::all();
-        return view('admin.post.create', compact('category'));
+    {   
+        return view('admin.post.create', $this->user->createPost());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    
+    public function store(PostRequest $request)
     {
-        $this->validate($request, [
-            'title' => 'required',
-            'category_id' => 'required',
-            'content' => 'required',
-            'image' => 'required'
-        ]);
-        
         $image = $request->image;
         $new_image = time().$image->getClientOriginalName();
         
-        Post::create([
+        $post  = Post::create([
             'title'         => $request->title,
             'category_id'   => $request->category_id,
             'content'       => $request->content,
             'slug'          => Str::slug($request->title),
-            'image'         => 'public/uploads/posts/' . $new_image
+            'image'         => 'public/uploads/posts/' . $new_image,
+            'user_id'       => Auth::id()
         ]);
+        $post->tags()->attach($request->tags);
+        
         $image->move('public/uploads/posts/', $new_image);
         return redirect()->route('post.index')->with('message', 'Post Berhasil Ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+     
     public function show($id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+     
     public function edit($id)
     {
-        //
+        $category = Category::all();
+        $tag = Tag::all();
+        $post = Post::findorfail($id);
+        return view('admin.post.edit', compact('category', 'tag', 'post'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+     
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request, [
+            'title' => 'required',
+            'category_id' => 'required',
+            'content' => 'required',
+        ]);
+
+        $post = Post::findorfail($id);
+
+        if ($request->has('image')) {
+            $image = $request->image;
+            $new_image = time().$image->getClientOriginalName();
+            $image->move('public/uploads/posts/', $new_image);
+            $post_data  = [
+                'title'         => $request->title,
+                'category_id'   => $request->category_id,
+                'content'       => $request->content,
+                'slug'          => Str::slug($request->title),
+                'image'         => 'public/uploads/posts/' . $new_image
+            ];
+        }else{
+            $post_data  = [
+                'title'         => $request->title,
+                'category_id'   => $request->category_id,
+                'content'       => $request->content,
+                'slug'          => Str::slug($request->title)
+            ];
+        }
+
+        
+        $post->tags()->sync($request->tags);
+        $post->update($post_data);
+        
+        return redirect()->route('post.index')->with('message', 'Post Berhasil Diubah.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+     
     public function destroy($id)
     {
-        //
+        $post = Post::findorfail($id);
+        $post->delete();
+        return redirect()->route('post.index')->with('message', 'Data Post Berhasil Dihapus (Silahkan Cek Trashed Post)');
+    }
+
+    public function trashed(){
+        $post = Post::onlyTrashed()->paginate(10);
+        return view('admin.post.trashed', compact('post'));
+    }
+
+    public function restore($id){
+        $post = Post::withTrashed()->where('id', $id)->first();
+        $post->restore();
+        return redirect()->route('post.trashed')->with('message', 'Data Post Berhasil Direstore (Silahkan Cek List Post)');
+    }
+
+    public function kill($id){
+        $post = Post::withTrashed()->where('id', $id)->first();
+        $post->forceDelete();
+
+        return redirect()->route('post.trashed')->with('message', 'Data Post Berhasil Dihapus secara permanen');
+    }
+
+
+    public function calendar(){
+        return view('admin.calendar.index');
+    }
+
+    public function event(){
+        $event = Calendar::all();
+        return response()->json($event, 200);
     }
 }

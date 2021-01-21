@@ -1,11 +1,12 @@
 @extends('templates_admin.main')
 
-@section('title', 'Data Kategori')
-@section('heading', 'Data Kategori')
+@section('title', 'Data Post')
+@section('heading', 'Data Post')
 
 @section('content')
+
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-12">
             <a href="{{ route('post.create') }}" class="btn btn-info mb-3">Tambah Post</a>
             @if ($message = Session::get('message'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -15,13 +16,15 @@
                     </button>
                 </div>
             @endif
-            <table class="table table-striped table-hover table-sm table-bordered w-70">
+            <table class="table table-striped table-hover table-sm table-bordered w-70 table-responsive">
                 <thead>
                     <tr>
-                        <th style="width: 5%">No</th>
+                        <th style="width: 5%" class="text-center">No</th>
                         <th>Judul</th>
                         <th>Konten</th>
                         <th>Kategori</th>
+                        <th>Author</th>
+                        <th style="width: 15%">Tags</th>
                         <th>Thumbnail</th>
                         <th>Action</th>
                     </tr>
@@ -29,10 +32,18 @@
                 <tbody>
                     @foreach ($post as $r => $c)
                         <tr>
-                            <td>{{ $r + $post->firstitem() }}</td>
+                            <td class="text-center">{{ $r + $post->firstitem() }}</td>
                             <td>{{ $c->title }}</td>
-                            <td>{{ Str::limit($c->content, 30) }}</td>
+                            <td>{!! Str::limit($c->content, 30) !!}</td>
                             <td>{{ $c->category->name }}</td>
+                            <td>
+                                {{ $c->users->name }}
+                            </td>
+                            <td>
+                                @foreach ($c->tags as $tag)
+                                    <span class="badge badge-pill mb-1 badge-info">{{ $tag->name }}</span>
+                                @endforeach
+                            </td>
                             <td><img src="{{ asset($c->image) }}" class="img-fluid img-thumbnail" width="120"></td>
                             <td>
                                 <form action="{{ route('post.destroy', $c->id) }}" method="POST" class="form-inline">

@@ -13,7 +13,7 @@
                     <label for="">Judul</label>
                     <input type="text" name="title"
                         class="form-control @error('title')is-invalid
-                                                                                                                    @enderror">
+                                                                                                                                                                    @enderror">
                     @error('title')
                         <small class="form-text text-danger">{{ $message }}</small>
                     @enderror
@@ -21,7 +21,7 @@
                 <div class="form-group">
                     <label for="">Kategori</label>
                     <select name="category_id" class="form-control @error('category_id')is-invalid
-                                            @enderror">
+                                                                                            @enderror">
                         <option disabled selected>--Pilih Kategori--</option>
                         @foreach ($category as $c)
                             <option value="{{ $c->id }}">{{ $c->name }}</option>
@@ -33,22 +33,23 @@
                 </div>
                 <div class="form-group">
                     <label for="">Content</label>
-                    <textarea name="content" cols="60" rows="30" class="form-control @error('content')is-invalid
-                                            @enderror"></textarea>
+                    <textarea name="content" id="postContent" cols="60" rows="60" class="form-control @error('content')is-invalid
+                                                                                            @enderror"></textarea>
                     @error('content')
                         <small class="form-text text-danger">{{ $message }}</small>
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label>Select2 Multiple</label>
-                    <select class="form-control select2" multiple="">
-                        <option>Option 1</option>
-                        <option>Option 2</option>
-                        <option>Option 3</option>
-                        <option>Option 4</option>
-                        <option>Option 5</option>
-                        <option>Option 6</option>
+                    <label>Pilih Tag</label>
+                    <select class="form-control select2 @error('content')is-invalid
+                                    @enderror" multiple="" name="tags[]">
+                        @foreach ($tag as $t)
+                            <option value="{{ $t->id }}">{{ $t->name }}</option>
+                        @endforeach
                     </select>
+                    @error('tags')
+                        <small class="form-text text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
                 <div class="form-group">
                     <label for="">Thumbnail</label><br>
